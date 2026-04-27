@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KL DESK | Peer Collaboration</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav id="top-nav" class="top-nav fade-in">
+        <div class="logo-container">
+            <span class="logo-text" style="color: #0071e3; font-weight: 800; font-size: 24px;">KL DESK.</span>
+        </div>
+        <button class="primary-btn nav-btn hover-scale" onclick="openAuth('login')">Sign In</button>
+    </nav>
+
+    <header id="hero-section" class="hero fade-in-up">
+        <div class="badge-pill">✨ Peer Review Platform</div>
+        <h1>Collaborate & Review<br><span style="color: #0071e3;">Smarter.</span></h1>
+        <p class="hero-subtext">The all-in-one platform for sharing projects, giving constructive feedback, and building a stronger student developer community.</p>
+        <button class="primary-btn large-btn hover-scale" onclick="openAuth('register')">Get Started →</button>
+    </header>
+
+    <div id="app-layout" class="app-container hidden">
+        
+        <aside class="sidebar fade-in-left">
+            <div class="logo-container" style="margin-bottom: 30px;">
+                <span class="logo-text" style="color: #0071e3; font-weight: 800; font-size: 24px;">KL DESK.</span>
+            </div>
+            <ul class="side-links">
+                <li id="nav-explore" class="active-link hover-scale-slight" onclick="switchTab('explore')">🧭 Explore Feed</li>
+                <li id="nav-classroom" class="hover-scale-slight" onclick="switchTab('classroom')">🏫 Classrooms</li>
+                <li id="nav-collabs" class="hover-scale-slight" onclick="switchTab('collabs')">🤝 Collab Requests <span id="collab-badge" class="badge hidden">New</span></li>
+                <li id="nav-messages" class="hover-scale-slight" onclick="switchTab('messages')">💬 Messages <span id="msg-badge" class="badge hidden">●</span></li>
+            </ul>
+            <div id="user-profile" class="user-profile">
+                <div class="avatar shadow-sm" id="nav-avatar">U</div>
+                <div class="user-details">
+                    <span id="display-user">@username</span>
+                    <span id="display-role" class="role-badge">STUDENT</span>
+                </div>
+            </div>
+            <button class="outline-btn hover-scale" onclick="logout()" style="width:100%; margin-top:15px;">Sign Out</button>
+        </aside>
+
+        <main class="feed" id="view-explore">
+            <h2 class="fade-in" style="margin-bottom: 20px;">Explore Feed</h2>
+            <div id="post-creation-box" class="glass-card fade-in-up" style="margin-bottom: 30px;">
+                <input type="text" id="new-project-title" class="light-input focus-ring" placeholder="Project Title (e.g., React Dashboard)...">
+                <textarea id="new-project-desc" class="light-input focus-ring" placeholder="What are you building? Looking for peer review?"></textarea>
+                <div style="text-align: right; margin-top: 10px;">
+                    <button onclick="postProject()" class="primary-btn hover-scale">Post to Explore</button>
+                </div>
+            </div>
+            <div id="explore-feed"></div>
+        </main>
+
+        <main class="feed hidden" id="view-classroom">
+            <div id="admin-classroom-hub" class="hidden">
+                <div id="admin-class-list-view">
+                    <div class="glass-card fade-in-up" style="margin-bottom: 20px;">
+                        <h3>Create New Classroom</h3>
+                        <div style="display:flex; gap:10px; margin-top:10px;">
+                            <input type="text" id="new-class-name" class="light-input focus-ring" placeholder="e.g., FSAD Section A" style="margin-bottom:0;">
+                            <button onclick="createClass()" class="primary-btn hover-scale" style="white-space:nowrap;">Create</button>
+                        </div>
+                    </div>
+                    <h2 class="fade-in">My Active Classrooms</h2>
+                    <div id="admin-active-classes" style="margin-top:15px;"></div>
+                </div>
+
+                <div id="admin-single-class-view" class="hidden fade-in">
+                    <button onclick="closeSingleClass()" class="outline-btn hover-scale" style="margin-bottom:15px;">← Back</button>
+                    <div class="glass-card" style="border-left: 4px solid #0071e3; margin-bottom: 20px;">
+                        <h2 id="single-class-title">Class Name</h2>
+                        <p style="color: #86868b;">Class Code: <strong id="single-class-code" style="color:#1d1d1f;">---</strong></p>
+                    </div>
+                    <div class="glass-card" style="margin-bottom: 20px;">
+                        <select id="post-type" class="light-input focus-ring"><option value="announcement">📢 Announcement</option><option value="project">📝 Project Assignment</option></select>
+                        <input type="text" id="class-post-title" class="light-input focus-ring" placeholder="Post Title/Instructions...">
+                        <button onclick="createClassPost()" class="primary-btn hover-scale">Post to Class</button>
+                    </div>
+                    <div style="display:flex; gap:10px; margin-bottom:15px;">
+                        <button class="outline-btn hover-scale" style="flex:1;" onclick="toggleAdminTabs('feed')">Feed</button>
+                        <button class="outline-btn hover-scale" style="flex:1;" onclick="toggleAdminTabs('students')">Students</button>
+                        <button class="outline-btn hover-scale" style="flex:1;" onclick="toggleAdminTabs('requests')">Requests</button>
+                    </div>
+                    <div id="tab-feed" class="class-tab"><div id="admin-class-feed"></div></div>
+                    <div id="tab-students" class="class-tab hidden"><ul id="admin-student-list" class="student-list"></ul></div>
+                    <div id="tab-requests" class="class-tab hidden"><ul id="admin-request-list" class="student-list"></ul></div>
+                </div>
+            </div>
+
+            <div id="student-classroom-hub" class="hidden">
+                <div id="student-class-list-view">
+                    <div class="glass-card fade-in-up" style="margin-bottom: 20px;">
+                        <h3>Join a Classroom</h3>
+                        <div style="display:flex; gap:10px; margin-top:10px;">
+                            <input type="text" id="join-class-code" class="light-input focus-ring" placeholder="Enter Class Code..." style="margin-bottom:0;">
+                            <button onclick="requestJoinClass()" class="primary-btn hover-scale" style="white-space:nowrap;">Join</button>
+                        </div>
+                    </div>
+                    <h2 class="fade-in">My Active Classrooms</h2>
+                    <div id="student-active-classes" style="margin-top:15px;"></div>
+                </div>
+
+                <div id="student-single-class-view" class="hidden fade-in">
+                    <button onclick="closeSingleClass()" class="outline-btn hover-scale" style="margin-bottom:15px;">← Back</button>
+                    <h2 id="student-class-title" style="margin-bottom: 20px;">Class Name</h2>
+                    <div id="student-class-feed"></div>
+                </div>
+            </div>
+        </main>
+
+        <main class="feed hidden" id="view-collabs">
+            <h2 class="fade-in" style="margin-bottom: 20px;">Collaboration Requests</h2>
+            <div id="collabs-feed"></div>
+        </main>
+
+        <main class="feed hidden" id="view-messages">
+            <h2 class="fade-in" style="margin-bottom: 20px;">Messages</h2>
+            <div class="glass-card chat-container fade-in-up">
+                <div class="chat-sidebar" id="chat-contacts">
+                    <p style="color:#86868b; text-align:center; margin-top:20px;">No active collaborations.</p>
+                </div>
+                <div class="chat-window hidden" id="chat-window">
+                    <div class="chat-header"><strong id="chat-with-name">@username</strong></div>
+                    <div class="chat-history" id="chat-history"></div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chat-message-input" class="light-input focus-ring" placeholder="Type a message..." style="margin-bottom:0; flex:1;">
+                        <button class="primary-btn hover-scale" onclick="sendMessage()">Send</button>
+                    </div>
+                </div>
+                <div id="chat-placeholder" style="flex:1; display:flex; align-items:center; justify-content:center; color:#86868b;">
+                    Select a collaborator to start chatting.
+                </div>
+            </div>
+        </main>
+
+        <aside class="right-panel fade-in-right">
+            <div class="glass-card">
+                <h3>Trending Tags</h3>
+                <div class="tags"><span class="tag">#ReactJS</span><span class="tag">#NodeJS</span></div>
+            </div>
+        </aside>
+    </div>
+
+    <div id="auth-modal" class="modal-overlay hidden">
+        <div class="glass-card modal-card fade-in-up">
+            <button class="close-btn hover-scale" onclick="closeAuth()">×</button>
+            <h2 id="auth-title">Welcome Back</h2>
+            <div id="form-login" class="auth-form active">
+                <input type="text" id="login-username" class="light-input focus-ring" placeholder="Username (try 'admin')">
+                <input type="password" id="login-password" class="light-input focus-ring" placeholder="Password (try '123')">
+                <button onclick="loginUser()" class="primary-btn hover-scale" style="width: 100%; margin-top: 10px;">Login</button>
+                <p class="switch-auth">New? <a href="#" onclick="openAuth('register')">Create account</a></p>
+            </div>
+            <div id="form-register" class="auth-form hidden">
+                <input type="text" id="reg-username" class="light-input focus-ring" placeholder="Username">
+                <input type="password" id="reg-password" class="light-input focus-ring" placeholder="Password">
+                <select id="reg-role" class="light-input focus-ring"><option value="student">Student</option><option value="admin">Admin (Teacher)</option></select>
+                <button onclick="registerUser()" class="primary-btn hover-scale" style="width: 100%; margin-top: 10px;">Register</button>
+                <p class="switch-auth">Already registered? <a href="#" onclick="openAuth('login')">Sign in</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
