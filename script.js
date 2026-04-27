@@ -33,6 +33,9 @@ function initializeData() {
 initializeData();
 let activeClassCode = null;
 let currentChatUser = null;
+const SESSION_TIMEOUT_MS = 2 * 1000;
+let sessionTimerId = null;
+let activityListenersAttached = false;
 
 // --- 2. AUTH & ROUTING ---
 window.onload = function() { checkAuth(); };
@@ -48,9 +51,12 @@ function checkAuth() {
         document.getElementById('nav-avatar').innerText = user.username.charAt(0).toUpperCase();
         document.getElementById('display-role').innerText = user.role.toUpperCase();
         
+        ensureActivityListeners();
+        startSessionTimer();
         switchTab('explore');
         checkNotifications();
     } else {
+        stopSessionTimer();
         document.getElementById('hero-section').style.display = 'flex';
         document.getElementById('top-nav').style.display = 'flex';
         document.getElementById('app-layout').classList.add('hidden');
@@ -498,6 +504,50 @@ function submitProjectLink(postId) {
     post.submissions.push({ user: user.username, link: link });
     localStorage.setItem('classrooms', JSON.stringify(classrooms));
     openSingleClass(activeClassCode, 'student');
+}
+
+// --- 7. SESSION MANAGEMENT ---
+function ensureActivityListeners() {
+    if (activityListenersAttached) return;
+
+    const events = ['click', 'keydown', 'mousemove', 'scroll', 'touchstart'];
+    events.forEach((eventName) => {
+        window.addEventListener(eventName, resetSessionTimer, { passive: true });
+    });
+
+    activityListenersAttached = true;
+}
+
+function startSessionTimer() {
+    resetSessionTimer();
+}
+
+function stopSessionTimer() {
+    if (sessionTimerId) {
+        clearTimeout(sessionTimerId);
+        sessionTimerId = null;
+    }
+}
+
+function resetSessionTimer() {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    if (!user) {
+        stopSessionTimer();
+        return;
+    }
+
+    stopSessionTimer();
+    sessionTimerId = setTimeout(() => {
+        autoEndSession();
+    }, SESSION_TIMEOUT_MS);
+}
+
+function autoEndSession() {
+    localStorage.removeItem('currentUser');
+    activeClassCode = null;
+    currentChatUser = null;
+    checkAuth();
+    alert('Session ended due to inactivity.');
 }
 
 // --- 8. AUTH BOILERPLATE ---
